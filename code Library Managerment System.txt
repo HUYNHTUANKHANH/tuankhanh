@@ -1,0 +1,67 @@
+REPORT zlibrary_management_system.
+
+CLASS lcl_library DEFINITION.
+  PUBLIC SECTION.
+    TYPES: BEGIN OF ty_book,
+             title TYPE string,
+             author TYPE string,
+             isbn TYPE string,
+             available TYPE abap_bool,
+           END OF ty_book,
+           tt_book TYPE STANDARD TABLE OF ty_book WITH DEFAULT KEY.
+
+    METHODS: constructor,
+             add_book IMPORTING iv_title TYPE string
+                               iv_author TYPE string
+                               iv_isbn TYPE string,
+             check_out_book IMPORTING iv_isbn TYPE string
+                             RETURNING VALUE(rv_success) TYPE abap_bool,
+             display_books.
+
+  PRIVATE SECTION.
+    DATA: gt_books TYPE tt_book.
+ENDCLASS.
+
+CLASS lcl_library IMPLEMENTATION.
+  METHOD constructor.
+    " Initialize the book table
+  ENDMETHOD.
+
+  METHOD add_book.
+    " Add a new book to the library
+    APPEND VALUE #( title = iv_title author = iv_author isbn = iv_isbn available = abap_true ) TO gt_books.
+  ENDMETHOD.
+
+  METHOD check_out_book.
+    " Check out a book from the library
+
+ LOOP AT gt_books ASSIGNING FIELD-SYMBOL(<fs_book>) WHERE isbn = iv_isbn AND available = abap_true.
+      <fs_book>-available = abap_false.
+      rv_success = abap_true.
+      EXIT.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD display_books.
+    " Display all books in the library
+    LOOP AT gt_books INTO DATA(ls_book).
+      WRITE: / ls_book-title, ls_book-author, ls_book-isbn, ls_book-available.
+    ENDLOOP.
+  ENDMETHOD.
+ENDCLASS.
+
+START-OF-SELECTION.
+  DATA: go_library TYPE REF TO lcl_library.
+
+  " Create library object
+  CREATE OBJECT go_library.
+
+  " Add books to the library
+  go_library->add_book( iv_title = 'The Great Gatsby' iv_author = 'F. Scott Fitzgerald' iv_isbn = '1234567890' ).
+  go_library->add_book( iv_title = '1984' iv_author = 'George Orwell' iv_isbn = '0987654321' ).
+
+  " Check out a book
+  go_library->check_out_book( iv_isbn = '1234567890' ).
+
+  " Display all books
+  go_library->display_books( ).
